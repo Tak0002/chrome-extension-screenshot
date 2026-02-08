@@ -279,8 +279,11 @@ async function handleCopyClipboard() {
 }
 
 async function cleanupCapture() {
-  if (captureRecord?.captureId && chrome?.storage?.session) {
-    await chrome.storage.session.remove(`capture:${captureRecord.captureId}`);
+  if (captureRecord?.captureId && chrome?.runtime?.sendMessage) {
+    await chrome.runtime.sendMessage({
+      type: "clearCapture",
+      captureId: captureRecord.captureId
+    });
   }
   if (autoCloseEl.checked) {
     window.setTimeout(() => window.close(), 500);
@@ -302,9 +305,9 @@ function updateMeta() {
 }
 
 async function loadCapture(captureId) {
-  if (chrome?.storage?.session && captureId) {
-    const result = await chrome.storage.session.get(`capture:${captureId}`);
-    return result[`capture:${captureId}`] ?? null;
+  if (chrome?.runtime?.sendMessage && captureId) {
+    const response = await chrome.runtime.sendMessage({ type: "getCapture", captureId });
+    return response?.capture ?? null;
   }
   return null;
 }
@@ -338,7 +341,7 @@ async function createDemoCapture() {
 async function init() {
   const params = new URLSearchParams(window.location.search);
   const captureId = params.get("captureId");
-  const demoMode = params.get("demo") === "1" || !chrome?.storage?.session;
+  const demoMode = params.get("demo") === "1" || !chrome?.runtime?.sendMessage;
 
   setStatus("準備中…");
   captureRecord = demoMode ? await createDemoCapture() : await loadCapture(captureId);

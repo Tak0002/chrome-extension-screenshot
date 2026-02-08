@@ -50,8 +50,12 @@ async function scrollToPosition(tabId, x, y) {
 }
 
 async function blobToDataUrl(blob) {
-  const reader = new FileReaderSync();
-  return reader.readAsDataURL(blob);
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error ?? new Error("Failed to read blob"));
+    reader.readAsDataURL(blob);
+  });
 }
 
 async function captureFullPage(tab) {

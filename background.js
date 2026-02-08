@@ -52,6 +52,52 @@ async function scrollToPosition(tabId, x, y) {
   });
 }
 
+async function setFixedElementsHidden(tabId, hidden) {
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    func: (shouldHide) => {
+      const styleId = "__capture_hide_fixed_style";
+      const attrName = "data-capture-hide-fixed";
+      const storageKey = "__captureFixedElements";
+
+      if (shouldHide) {
+        if (window[storageKey]?.length) {
+          return;
+        }
+        const elements = Array.from(document.body?.querySelectorAll("*") ?? []).filter((el) => {
+          const style = window.getComputedStyle(el);
+          return style.position === "fixed" || style.position === "sticky";
+        });
+
+        elements.forEach((el) => {
+          el.setAttribute(attrName, "true");
+        });
+        window[storageKey] = elements;
+
+        if (!document.getElementById(styleId)) {
+          const styleTag = document.createElement("style");
+          styleTag.id = styleId;
+          styleTag.textContent = `[${attrName}] { visibility: hidden !important; }`;
+          document.head?.appendChild(styleTag);
+        }
+        return;
+      }
+
+      const elements = window[storageKey] ?? [];
+      elements.forEach((el) => {
+        el.removeAttribute(attrName);
+      });
+      delete window[storageKey];
+
+      const styleTag = document.getElementById(styleId);
+      if (styleTag) {
+        styleTag.remove();
+      }
+    },
+    args: [hidden]
+  });
+}
+
 async function blobToDataUrl(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -72,19 +118,23 @@ async function captureFullPage(tab) {
   let captureWidth = null;
   let captureHeight = null;
 
-  for (const position of positions) {
-    await scrollToPosition(tab.id, position.x, position.y);
-    await delay(SCROLL_DELAY_MS);
-    const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
-    const bitmap = await createImageBitmap(await (await fetch(dataUrl)).blob());
-    if (!captureWidth) {
-      captureWidth = bitmap.width;
-      captureHeight = bitmap.height;
+  try {
+    await setFixedElementsHidden(tab.id, true);
+    for (const position of positions) {
+      await scrollToPosition(tab.id, position.x, position.y);
+      await delay(SCROLL_DELAY_MS);
+      const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
+      const bitmap = await createImageBitmap(await (await fetch(dataUrl)).blob());
+      if (!captureWidth) {
+        captureWidth = bitmap.width;
+        captureHeight = bitmap.height;
+      }
+      captures.push({ bitmap, position });
     }
-    captures.push({ bitmap, position });
+  } finally {
+    await setFixedElementsHidden(tab.id, false);
+    await scrollToPosition(tab.id, info.scrollX, info.scrollY);
   }
-
-  await scrollToPosition(tab.id, info.scrollX, info.scrollY);
 
   const scale = captureHeight / info.clientHeight;
   const stitchedHeight = Math.ceil(info.scrollHeight * scale);

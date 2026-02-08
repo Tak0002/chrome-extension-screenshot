@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>スクリーンショット</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup">
+      <h1>スクリーンショット</h1>
+      <p class="hint">キャプチャ種別を選択してください。</p>
+      <div class="actions">
+        <button data-mode="viewport">表示範囲をキャプチャ</button>
+        <button data-mode="fullpage">ページ全体をキャプチャ（試験的）</button>
+      </div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>スクリーンショットを保存</title>
+    <link rel="stylesheet" href="save.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <section class="preview">
+        <div class="preview-header">
+          <h1>スクリーンショットを保存</h1>
+          <p id="meta"></p>
+        </div>
+        <div class="preview-frame">
+          <img id="preview-image" alt="キャプチャプレビュー" />
+        </div>
+      </section>
+      <aside class="panel">
+        <div class="panel-section">
+          <h2>保存形式</h2>
+          <label class="field">
+            <span>画像形式</span>
+            <select id="format">
+              <option value="png">PNG</option>
+              <option value="jpg">JPG</option>
+            </select>
+          </label>
+          <label class="field" id="quality-field">
+            <span>JPG品質</span>
+            <input type="range" id="quality" min="0" max="100" value="90" />
+            <span class="range-value" id="quality-value">90</span>
+          </label>
+          <label class="field">
+            <span>ファイル名</span>
+            <input type="text" id="filename" />
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="auto-close" />
+            <span>完了後タブを閉じる</span>
+          </label>
+        </div>
+        <div class="panel-section actions">
+          <button class="primary" id="save-image">画像として保存</button>
+          <button id="save-pdf">PDFとして保存</button>
+          <button id="copy-clipboard">クリップボードにコピー</button>
+        </div>
+        <div class="panel-section status">
+          <p id="status">準備中…</p>
+        </div>
+      </aside>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="save.js"></script>
+  </body>
+</html>

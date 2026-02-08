@@ -1,0 +1,155 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", "Noto Sans JP", sans-serif;
+  background: #eef0f3;
+  color: #1f2937;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  min-height: 80vh;
+}
+
+.preview-header h1 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.preview-header p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.preview-frame {
+  flex: 1;
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  overflow: auto;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1);
+}
+
+.preview-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.panel {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.panel-section h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.field {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.field input[type="text"],
+.field select {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.field input[type="range"] {
+  width: 100%;
+}
+
+.range-value {
+  font-size: 12px;
+  color: #2563eb;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.actions {
+  display: grid;
+  gap: 10px;
+}
+
+.actions button {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+.actions button.primary {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.actions button:hover {
+  filter: brightness(0.98);
+}
+
+.status {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: #111827;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

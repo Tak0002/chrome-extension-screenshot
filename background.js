@@ -1,5 +1,7 @@
 const CAPTURE_TTL_MS = 30 * 60 * 1000;
 const SCROLL_DELAY_MS = 200;
+const CAPTURE_RETRY_DELAY_MS = 350;
+const MAX_CAPTURE_RETRIES = 4;
 const captureCache = new Map();
 
 function getCaptureKey(captureId) {
@@ -107,6 +109,25 @@ async function blobToDataUrl(blob) {
   });
 }
 
+function isCaptureQuotaError(error) {
+  return error?.message?.includes("MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND");
+}
+
+async function captureVisibleTabWithRetry(windowId, options, retries = MAX_CAPTURE_RETRIES) {
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      return await chrome.tabs.captureVisibleTab(windowId, options);
+    } catch (error) {
+      if (!isCaptureQuotaError(error) || attempt === retries) {
+        throw error;
+      }
+      await delay(CAPTURE_RETRY_DELAY_MS * (attempt + 1));
+    }
+  }
+
+  throw new Error("Failed to capture visible tab");
+}
+
 async function captureFullPage(tab) {
   const info = await getPageInfo(tab.id);
   const positions = [];
@@ -123,7 +144,7 @@ async function captureFullPage(tab) {
     for (const position of positions) {
       await scrollToPosition(tab.id, position.x, position.y);
       await delay(SCROLL_DELAY_MS);
-      const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
+      const dataUrl = await captureVisibleTabWithRetry(tab.windowId, { format: "png" });
       const bitmap = await createImageBitmap(await (await fetch(dataUrl)).blob());
       if (!captureWidth) {
         captureWidth = bitmap.width;
@@ -200,7 +221,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (mode === "fullpage") {
         capture = await captureFullPage(activeTab);
       } else {
-        const dataUrl = await chrome.tabs.captureVisibleTab(activeTab.windowId, { format: "png" });
+        const dataUrl = await captureVisibleTabWithRetry(activeTab.windowId, { format: "png" });
         capture = { dataUrl, width: null, height: null, devicePixelRatio: null };
       }
       const captureId = await createCaptureRecord({
